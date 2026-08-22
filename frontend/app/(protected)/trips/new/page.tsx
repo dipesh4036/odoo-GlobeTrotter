@@ -1,12 +1,13 @@
 "use client";
 
+import { useState, useRef } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { motion } from "motion/react";
-import { ArrowRight, Loader2, Map as MapIcon, CalendarIcon, ChevronLeft } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowRight, Loader2, Map as MapIcon, CalendarIcon, ChevronLeft, ImagePlus, X } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 
@@ -22,11 +23,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useCreateTripMutation, createTripSchema } from "@/api/useTrips";
+import { useCreateTripMutation, useUploadCoverPhotoMutation, createTripSchema } from "@/api/useTrips";
 
 export default function CreateTripPage() {
   const router = useRouter();
   const { mutateAsync: createTrip } = useCreateTripMutation();
+  const { mutateAsync: uploadCoverPhoto } = useUploadCoverPhotoMutation();
+
+  const [coverPhoto, setCoverPhoto] = useState<File | null>(null);
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof createTripSchema>>({
     resolver: zodResolver(createTripSchema),
@@ -38,13 +45,54 @@ export default function CreateTripPage() {
     },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type (jpeg, png, webp)
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error("Invalid file type. Only JPEG, PNG, and WebP are allowed.");
+      return;
+    }
+    
+    // Validate file size (under 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB limit.");
+      return;
+    }
+
+    setCoverPhoto(file);
+    const objectUrl = URL.createObjectURL(file);
+    setCoverPhotoPreview(objectUrl);
+  };
+
+  const removeCoverPhoto = () => {
+    setCoverPhoto(null);
+    if (coverPhotoPreview) URL.revokeObjectURL(coverPhotoPreview);
+    setCoverPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   async function onSubmit(values: z.infer<typeof createTripSchema>) {
     try {
       const response = await createTrip(values);
       toast.success("Trip created successfully!");
-      // Assuming backend returns { id: "clx..." } as per API contract
-      if (response && response.id) {
-        router.push(`/trips/${response.id}/build`);
+      
+      const tripId = response?.id;
+      
+      if (tripId && coverPhoto) {
+        setIsUploadingPhoto(true);
+        try {
+          await uploadCoverPhoto({ id: tripId, file: coverPhoto });
+        } catch (uploadError) {
+          toast.error("Trip created, but cover photo failed to upload.");
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      }
+
+      if (tripId) {
+        router.push(`/trips/${tripId}/build`);
       } else {
         router.push("/dashboard");
       }
@@ -89,6 +137,61 @@ export default function CreateTripPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               
+              {/* Cover Photo Upload */}
+              <div className="space-y-3">
+                <FormLabel className="text-zinc-700 font-medium text-xs uppercase tracking-wider flex justify-between">
+                  <span>Cover Photo</span>
+                  <span className="text-[10px] text-zinc-400 tracking-normal normal-case">Optional (max 5MB)</span>
+                </FormLabel>
+                
+                <div className="relative w-full rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 transition-all hover:bg-zinc-50 overflow-hidden group min-h-[160px] flex items-center justify-center">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    title="Upload cover photo"
+                  />
+                  
+                  <AnimatePresence>
+                    {coverPhotoPreview ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-0"
+                      >
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${coverPhotoPreview})` }}
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeCoverPhoto();
+                          }}
+                          className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-rose-500 text-white rounded-full backdrop-blur-sm transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-8 px-4 text-center z-0 pointer-events-none">
+                        <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                          <ImagePlus className="w-5 h-5 text-indigo-500" />
+                        </div>
+                        <p className="text-sm font-medium text-zinc-700">Click or drag an image here</p>
+                        <p className="text-xs text-zinc-400 mt-1">JPEG, PNG or WebP</p>
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
               <div className="space-y-6">
                 <FormField
                   control={form.control}

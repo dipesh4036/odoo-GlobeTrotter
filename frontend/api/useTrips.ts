@@ -54,3 +54,20 @@ export function useCreateTripMutation() {
   });
 }
 
+export function useUploadCoverPhotoMutation() {
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData();
+      formData.append("coverPhoto", file);
+      
+      const { data } = await apiClient.post(`/trips/${id}/cover-photo`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data;
+    },
+  });
+}
+
+
