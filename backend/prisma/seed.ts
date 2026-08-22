@@ -79,6 +79,25 @@ async function main() {
     ]
   });
 
+  // 5. Create Trips with various statuses
+  const today = new Date();
+  const pastStart = new Date(today); pastStart.setDate(today.getDate() - 30);
+  const pastEnd = new Date(today); pastEnd.setDate(today.getDate() - 20);
+  
+  const ongoingStart = new Date(today); ongoingStart.setDate(today.getDate() - 2);
+  const ongoingEnd = new Date(today); ongoingEnd.setDate(today.getDate() + 5);
+
+  const futureStart = new Date(today); futureStart.setDate(today.getDate() + 60);
+  const futureEnd = new Date(today); futureEnd.setDate(today.getDate() + 70);
+
+  await prisma.trip.createMany({
+    data: [
+      { userId: user1.id, name: 'European Adventure', startDate: pastStart, endDate: pastEnd, status: 'COMPLETED' },
+      { userId: user1.id, name: 'Tokyo Getaway', startDate: ongoingStart, endDate: ongoingEnd, status: 'ONGOING' },
+      { userId: user1.id, name: 'Ski Trip', startDate: futureStart, endDate: futureEnd, status: 'CANCELLED' }
+    ]
+  });
+
   console.log('Seed completed successfully!');
 }
 
