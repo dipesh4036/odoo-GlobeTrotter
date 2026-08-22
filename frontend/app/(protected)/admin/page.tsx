@@ -5,11 +5,24 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Users, MapPin, Activity, TrendingUp } from "lucide-react";
+import { useAdminUsersQuery } from "@/api/useAdmin";
+import { format } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("users");
+
+  const { data: usersList, isLoading: isUsersLoading } = useAdminUsersQuery();
 
   useEffect(() => {
     if (!isLoading && user && user.role !== "ADMIN") {
@@ -55,9 +68,66 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="users" className="mt-8">
-            {/* Manage Users Tab Content */}
-            <div className="p-8 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
-              <p className="text-zinc-500 font-medium">Manage Users (WIP)</p>
+            <div className="bg-white rounded-3xl border border-zinc-200 overflow-hidden shadow-sm">
+              <div className="p-6 border-b border-zinc-100 flex justify-between items-center bg-zinc-50/50">
+                <h3 className="font-bold text-lg text-zinc-900">All Users</h3>
+                <Badge variant="secondary" className="rounded-full px-3 py-1 bg-white border-zinc-200 text-zinc-600">
+                  {usersList?.length || 0} Total
+                </Badge>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="bg-zinc-50/80">
+                    <TableRow className="hover:bg-transparent border-zinc-100">
+                      <TableHead className="font-semibold text-zinc-600 py-4 pl-6">Name</TableHead>
+                      <TableHead className="font-semibold text-zinc-600 py-4">Email</TableHead>
+                      <TableHead className="font-semibold text-zinc-600 py-4">Role</TableHead>
+                      <TableHead className="font-semibold text-zinc-600 py-4 text-center">Trips</TableHead>
+                      <TableHead className="font-semibold text-zinc-600 py-4 text-right pr-6">Joined</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isUsersLoading ? (
+                      [1, 2, 3].map((i) => (
+                        <TableRow key={i} className="animate-pulse">
+                          <TableCell className="pl-6 py-4"><div className="h-4 bg-zinc-100 rounded w-32" /></TableCell>
+                          <TableCell><div className="h-4 bg-zinc-100 rounded w-48" /></TableCell>
+                          <TableCell><div className="h-5 bg-zinc-100 rounded-full w-16" /></TableCell>
+                          <TableCell><div className="h-4 bg-zinc-100 rounded w-8 mx-auto" /></TableCell>
+                          <TableCell className="pr-6 text-right"><div className="h-4 bg-zinc-100 rounded w-24 ml-auto" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : usersList?.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-12 text-zinc-500">
+                          No users found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      usersList?.map((u) => (
+                        <TableRow key={u.id} className="hover:bg-zinc-50/80 transition-colors border-zinc-100">
+                          <TableCell className="font-medium text-zinc-900 pl-6 py-4">
+                            {u.firstName} {u.lastName}
+                          </TableCell>
+                          <TableCell className="text-zinc-600 py-4">{u.email}</TableCell>
+                          <TableCell className="py-4">
+                            <Badge variant="outline" className={`rounded-md px-2 py-0.5 text-xs font-semibold ${u.role === 'ADMIN' ? 'border-indigo-200 text-indigo-700 bg-indigo-50' : 'border-zinc-200 text-zinc-600 bg-zinc-50'}`}>
+                              {u.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center text-zinc-700 font-medium py-4">
+                            {u.tripCount}
+                          </TableCell>
+                          <TableCell className="text-right text-zinc-500 py-4 pr-6 whitespace-nowrap">
+                            {format(new Date(u.joinedDate), "MMM d, yyyy")}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </TabsContent>
 
