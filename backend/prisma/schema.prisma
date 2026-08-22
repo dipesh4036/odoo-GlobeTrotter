@@ -18,10 +18,12 @@ model User {
   additionalInfo String?
   photoUrl       String?
   role           Role            @default(USER)
-  createdAt      DateTime        @default(now())
+  createdAt        DateTime        @default(now())
+  resetToken       String?
+  resetTokenExpiry DateTime?
   
-  trips          Trip[]
-  communityPosts CommunityPost[]
+  trips            Trip[]
+  communityPosts   CommunityPost[]
 }
 
 enum Role {
