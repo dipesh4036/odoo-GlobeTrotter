@@ -7,7 +7,8 @@ export const updateProfileSchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   additionalInfo: z.string().optional(),
-  photoUrl: z.string().url('Invalid URL').optional()
+  photoUrl: z.string().url('Invalid URL').optional(),
+  languagePreference: z.string().optional()
 }).strict();
 
 export const saveDestinationSchema = z.object({
