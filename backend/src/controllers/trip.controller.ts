@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { createTripSchema, updateTripSchema } from '../schemas/trip.schema';
 import { TripStatus } from '@prisma/client';
@@ -356,6 +357,57 @@ export const getTripCalendar = async (req: Request, res: Response): Promise<void
     });
   } catch (error) {
     console.error('Get trip calendar error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const generateSlug = (name: string): string => {
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  const randomStr = crypto.randomBytes(5).toString('hex');
+  return `${base}-${randomStr}`;
+};
+
+export const publishTrip = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const existingTrip = await prisma.trip.findUnique({ where: { id } });
+    if (!existingTrip) {
+      res.status(404).json({ error: 'Trip not found' });
+      return;
+    }
+
+    if (existingTrip.userId !== req.user.userId) {
+      res.status(403).json({ error: 'Forbidden: You do not own this trip' });
+      return;
+    }
+
+    let publicSlug = existingTrip.publicSlug;
+
+    if (!publicSlug) {
+      let isUnique = false;
+      while (!isUnique) {
+        publicSlug = generateSlug(existingTrip.name);
+        const collision = await prisma.trip.findUnique({ where: { publicSlug } });
+        if (!collision) {
+          isUnique = true;
+        }
+      }
+    }
+
+    const updatedTrip = await prisma.trip.update({
+      where: { id },
+      data: { isPublic: true, publicSlug }
+    });
+
+    res.status(200).json(updatedTrip);
+  } catch (error) {
+    console.error('Publish trip error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

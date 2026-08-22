@@ -16,6 +16,7 @@ import cityRoutes from './routes/city.routes';
 import activityRoutes from './routes/activity.routes';
 import userRoutes from './routes/user.routes';
 import communityRoutes from './routes/community.routes';
+import publicRoutes from './routes/public.routes';
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use('/api/cities', cityRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/community', communityRoutes);
+app.use('/api/public', publicRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
