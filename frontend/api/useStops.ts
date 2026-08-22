@@ -15,3 +15,20 @@ export function useUpdateStopMutation() {
     },
   });
 }
+
+interface CreateStopData {
+  cityId: string;
+  startDate: string;
+  endDate: string;
+  budget?: number;
+}
+
+export function useCreateStopMutation() {
+  return useMutation({
+    mutationFn: async ({ tripId, data }: { tripId: string; data: CreateStopData }) => {
+      const response = await apiClient.post(`/trips/${tripId}/stops`, data);
+      return response.data;
+    },
+  });
+}
+
