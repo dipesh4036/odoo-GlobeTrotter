@@ -18,6 +18,15 @@ export function useLoginMutation() {
   });
 }
 
+export function useLogoutMutation() {
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post("/auth/logout");
+      return data;
+    },
+  });
+}
+
 export const registerSchema = z.object({
   firstName: z.string().min(2, { message: "First name is required." }),
   lastName: z.string().min(2, { message: "Last name is required." }),

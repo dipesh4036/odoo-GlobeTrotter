@@ -208,3 +208,12 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};

@@ -82,15 +82,24 @@ function PreviousTrips() {
         </div>
       )}
 
-      {/* Plan a Trip Button positioned bottom-right */}
-      <div className="absolute -bottom-2 right-0">
-        <Link href="/trips/new">
-          <Button className="rounded-xl shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
-            + Plan a Trip
-          </Button>
-        </Link>
-      </div>
     </section>
+  );
+}
+
+function FloatingAddButton() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.4, type: "spring", stiffness: 200, damping: 20 }}
+      className="fixed bottom-8 right-8 z-50"
+    >
+      <Link href="/trips/new">
+        <Button className="h-14 px-6 rounded-full shadow-xl shadow-orange-500/20 hover:shadow-2xl hover:shadow-orange-500/30 hover:-translate-y-1 transition-all bg-[#F97316] hover:bg-[#EA580C] text-white font-semibold text-base border border-orange-400/30">
+          <span className="text-xl font-normal mr-1">+</span> Plan a Trip
+        </Button>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -160,9 +169,35 @@ export default function DashboardPage() {
               <Bell className="h-5 w-5" />
               <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500" />
             </button>
-            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
-              <UserIcon className="h-4 w-4 text-indigo-700" />
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 cursor-pointer hover:bg-indigo-200 transition-colors">
+                  <UserIcon className="h-4 w-4 text-indigo-700" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border-zinc-200">
+                <div className="px-3 py-2 border-b border-zinc-100 mb-1">
+                  <p className="text-sm font-medium text-zinc-900">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+                </div>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">Profile Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="text-rose-600 focus:text-rose-700 focus:bg-rose-50 cursor-pointer"
+                  onClick={async () => {
+                    try {
+                      await fetch("http://localhost:5001/api/auth/logout", { method: "POST", credentials: "include" });
+                      window.location.href = "/login";
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                >
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -268,6 +303,8 @@ export default function DashboardPage() {
         <div className="mt-10 mb-8 border-t border-zinc-100 pt-8" />
         
       </main>
+
+      <FloatingAddButton />
     </div>
   );
 }
