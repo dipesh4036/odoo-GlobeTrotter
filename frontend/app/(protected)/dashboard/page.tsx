@@ -153,55 +153,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-20">
-      {/* Top App Bar */}
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl">
-        <div className="flex h-16 items-center justify-between px-4 sm:px-6 md:px-8 max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-sm">
-              <Compass className="h-5 w-5" />
-            </div>
-            <span className="text-lg font-semibold tracking-tight text-zinc-900">
-              GlobeTrotter
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="relative p-2 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-colors">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500" />
-            </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger className="focus:outline-none">
-                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 cursor-pointer hover:bg-indigo-200 transition-colors">
-                  <UserIcon className="h-4 w-4 text-indigo-700" />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-lg border-zinc-200">
-                <div className="px-3 py-2 border-b border-zinc-100 mb-1">
-                  <p className="text-sm font-medium text-zinc-900">{user?.firstName} {user?.lastName}</p>
-                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
-                </div>
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">Profile Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="text-rose-600 focus:text-rose-700 focus:bg-rose-50 cursor-pointer"
-                  onClick={async () => {
-                    try {
-                      await fetch("http://localhost:5001/api/auth/logout", { method: "POST", credentials: "include" });
-                      window.location.href = "/login";
-                    } catch (e) {
-                      console.error(e);
-                    }
-                  }}
-                >
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-6">
         
         {/* Banner Section */}

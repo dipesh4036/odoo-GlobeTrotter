@@ -4,7 +4,7 @@ import { useState, use } from "react";
 import { useTripByIdQuery, useTripBudgetQuery, usePublishTripMutation } from "@/api/useTrips";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map, PieChart as PieChartIcon, BarChart2, AlertTriangle, Share2, Copy, Check, Loader2 } from "lucide-react";
+import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map, PieChart as PieChartIcon, BarChart2, AlertTriangle, Share2, Copy, Check, Loader2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -93,12 +93,11 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-900 transition-colors">
-              <span className="font-semibold text-lg tracking-tight">Odoo</span>
+            <Link href="/trips" className="text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2 text-sm font-medium">
+              <ChevronLeft className="w-4 h-4" /> Back to Trips
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -113,16 +112,14 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
               Share
             </Button>
             <Link href={`/trips/${tripId}/build`}>
-              <Button variant="outline" size="sm" className="rounded-lg h-9 shadow-sm">
-                <Edit3 className="w-4 h-4 mr-2" />
+              <Button size="sm" className="rounded-lg h-9 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
                 Edit Itinerary
               </Button>
             </Link>
           </div>
         </div>
-      </header>
 
-      <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+        <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Share your itinerary</DialogTitle>
@@ -145,8 +142,7 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
         </DialogContent>
       </Dialog>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-10">
-        
+      <div className="pt-2">
         {/* Trip Summary Info */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900 mb-3">{trip.name}</h1>
@@ -339,6 +335,7 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
               </motion.div>
             ))
           )}
+        </div>
         </div>
       </main>
     </div>

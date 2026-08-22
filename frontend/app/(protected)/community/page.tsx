@@ -60,20 +60,17 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
-          <span className="font-semibold text-lg tracking-tight text-zinc-900">Community</span>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-bold text-3xl tracking-tight text-zinc-900">Community</h1>
           <Button 
-            className="rounded-lg h-9 shadow-sm bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="rounded-xl shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
             onClick={() => setIsNewPostOpen(true)}
           >
             <PlusCircle className="w-4 h-4 mr-2" />
             New Post
           </Button>
         </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
         
         {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">

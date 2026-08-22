@@ -45,7 +45,7 @@ export default function RegisterPage() {
       await register(values);
       await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Account created successfully");
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (error: any) {
       if (error.response?.status === 409) {
         toast.error("Email already registered");

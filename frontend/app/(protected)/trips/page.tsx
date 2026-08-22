@@ -55,18 +55,16 @@ export default function TripsListingPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <span className="font-semibold text-lg tracking-tight text-zinc-900">My Trips</span>
-          </div>
-          <Link href="/trips/new">
-            <Button className="rounded-lg h-9 shadow-sm bg-indigo-600 hover:bg-indigo-700 text-white">
-              Create New Trip
-            </Button>
-          </Link>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-8 pb-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="font-bold text-3xl tracking-tight text-zinc-900">My Trips</h1>
         </div>
-      </header>
+        <Link href="/trips/new">
+          <Button className="rounded-xl shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all bg-[#F97316] hover:bg-[#EA580C] text-white font-medium">
+            + Plan a Trip
+          </Button>
+        </Link>
+      </div>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">

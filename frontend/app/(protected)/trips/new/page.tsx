@@ -159,24 +159,20 @@ export default function CreateTripPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-20">
-      {/* Top App Bar */}
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl">
-        <div className="flex h-16 items-center px-4 sm:px-6 md:px-8 max-w-4xl mx-auto">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center mb-6">
           <Link href="/dashboard" className="mr-4 p-2 -ml-2 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
-              <MapIcon className="h-4 w-4" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 shadow-sm">
+              <MapIcon className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold tracking-tight text-zinc-900">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
               Plan a New Trip
-            </span>
+            </h1>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
