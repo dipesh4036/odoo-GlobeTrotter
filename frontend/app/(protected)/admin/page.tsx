@@ -84,13 +84,10 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
-          <span className="font-semibold text-lg tracking-tight text-zinc-900">Admin Dashboard</span>
-        </div>
-      </header>
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-bold text-3xl tracking-tight text-zinc-900">Admin Dashboard</h1>
+        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="bg-zinc-200/50 p-1 rounded-xl inline-flex overflow-x-auto max-w-full">
             <TabsTrigger value="users" className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">

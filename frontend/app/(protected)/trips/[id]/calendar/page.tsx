@@ -89,15 +89,15 @@ export default function CalendarViewPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link href={`/trips/${tripId}`}>
               <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0 text-zinc-500 hover:text-zinc-900">
                 <ArrowLeft className="w-4 h-4" />
               </Button>
             </Link>
-            <span className="font-semibold text-lg tracking-tight text-zinc-900">Calendar View</span>
+            <h1 className="font-bold text-3xl tracking-tight text-zinc-900">Calendar View</h1>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" className="rounded-lg h-9 shadow-sm" onClick={() => setCurrentDate(new Date())}>
@@ -105,9 +105,6 @@ export default function CalendarViewPage({ params }: { params: Promise<{ id: str
             </Button>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
         <div className="bg-white border border-zinc-200 rounded-3xl shadow-sm overflow-hidden">
           
           {/* Calendar Header */}

@@ -40,7 +40,7 @@ function LoginForm() {
       toast.success("Welcome back to GlobeTrotter");
       
       const redirectTo = searchParams.get("redirect") || "/dashboard";
-      router.push(redirectTo);
+      window.location.href = redirectTo;
     } catch (error: any) {
       if (error.response?.status === 401) {
         toast.error("Invalid email or password");

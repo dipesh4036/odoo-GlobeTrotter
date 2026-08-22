@@ -105,13 +105,10 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-zinc-200/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
-          <span className="font-semibold text-lg tracking-tight text-zinc-900">My Profile</span>
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-bold text-3xl tracking-tight text-zinc-900">My Profile</h1>
         </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-10">
         {/* Profile Edit Section */}
         <div className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm flex flex-col md:flex-row gap-12 mb-16">
           <div className="flex flex-col items-center md:w-1/3">

@@ -42,7 +42,7 @@ export default function RegisterPage() {
     try {
       await register(values);
       toast.success("Account created successfully");
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (error: any) {
       if (error.response?.status === 409) {
         toast.error("Email already registered");

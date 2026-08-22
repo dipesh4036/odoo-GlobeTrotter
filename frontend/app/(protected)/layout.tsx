@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NavBar } from "@/components/NavBar";
 
 export default function ProtectedLayout({
   children,
@@ -33,5 +34,10 @@ export default function ProtectedLayout({
     return null; // Don't flash content while redirecting
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <NavBar />
+      {children}
+    </>
+  );
 }

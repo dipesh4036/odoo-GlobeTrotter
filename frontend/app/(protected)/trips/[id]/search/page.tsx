@@ -164,21 +164,15 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
-      {/* Top App Bar */}
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 bg-white/70 backdrop-blur-xl">
-        <div className="flex h-16 items-center justify-between px-4 sm:px-6 md:px-8 max-w-5xl mx-auto">
-          <div className="flex items-center">
-            <Link href={`/trips/${tripId}/build`} className="mr-4 p-2 -ml-2 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <span className="text-lg font-semibold tracking-tight text-zinc-900">
-              Search
-            </span>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+        <div className="flex items-center mb-8">
+          <Link href={`/trips/${tripId}/build`} className="mr-4 p-2 -ml-2 rounded-full hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-colors">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+            Search
+          </h1>
+        </div>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="mb-8">
           <TabsList className="bg-zinc-200/50 p-1 rounded-xl">
             <TabsTrigger value="activities" className="rounded-lg px-6 py-2 text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm">
