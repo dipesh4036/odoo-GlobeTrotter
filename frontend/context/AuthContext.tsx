@@ -14,6 +14,7 @@ interface User {
   country?: string;
   additionalInfo?: string;
   languageId?: string;
+  role: "USER" | "ADMIN";
 }
 
 interface AuthContextType {
