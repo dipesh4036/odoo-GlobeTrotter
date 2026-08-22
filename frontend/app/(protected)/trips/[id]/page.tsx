@@ -101,6 +101,16 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
             </Link>
           </div>
           <div className="flex items-center gap-3">
+            <Link href={`/trips/${tripId}/calendar`}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-lg h-9 shadow-sm"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Calendar
+              </Button>
+            </Link>
             <Button 
               variant="secondary" 
               size="sm" 
