@@ -87,7 +87,7 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
         id: stopAct.id,
         name: stopAct.activity?.name || "Unknown Activity",
         cost: stopAct.activity?.cost || 0,
-        cityName: stop.cityName 
+        cityName: stop.city?.name || "Unknown Location" 
       });
     });
     return acc;
