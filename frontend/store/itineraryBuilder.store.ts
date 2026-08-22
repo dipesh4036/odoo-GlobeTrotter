@@ -26,6 +26,7 @@ interface ItineraryBuilderState {
   updateSection: (id: string, data: Partial<Section>) => void;
   removeSection: (id: string) => void;
   reorderSections: (fromIndex: number, toIndex: number) => void;
+  reorderActivities: (sectionId: string, fromIndex: number, toIndex: number) => void;
 }
 
 export const useItineraryBuilderStore = create<ItineraryBuilderState>((set) => ({
@@ -54,5 +55,18 @@ export const useItineraryBuilderStore = create<ItineraryBuilderState>((set) => (
       const [movedSection] = newSections.splice(fromIndex, 1);
       newSections.splice(toIndex, 0, movedSection);
       return { sections: newSections };
+    }),
+
+  reorderActivities: (sectionId, fromIndex, toIndex) =>
+    set((state) => {
+      return {
+        sections: state.sections.map((section) => {
+          if (section.id !== sectionId) return section;
+          const newActivities = [...(section.activities || [])];
+          const [movedActivity] = newActivities.splice(fromIndex, 1);
+          newActivities.splice(toIndex, 0, movedActivity);
+          return { ...section, activities: newActivities };
+        }),
+      };
     }),
 }));

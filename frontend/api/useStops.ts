@@ -46,4 +46,24 @@ export function useAddActivityToStopMutation() {
   });
 }
 
+export function useReorderStopsMutation() {
+  return useMutation({
+    mutationFn: async ({ tripId, stopIds }: { tripId: string; stopIds: string[] }) => {
+      const response = await apiClient.patch(`/trips/${tripId}/stops/reorder`, { stopIds });
+      return response.data;
+    },
+  });
+}
+
+export function useReorderActivitiesMutation() {
+  return useMutation({
+    mutationFn: async ({ stopId, dayNumber, activityIds }: { stopId: string; dayNumber: number; activityIds: string[] }) => {
+      // Per prompt instructions, PATCH /api/stop-activities/reorder
+      const response = await apiClient.patch(`/stop-activities/reorder`, { stopId, dayNumber, activityIds });
+      return response.data;
+    },
+  });
+}
+
+
 
