@@ -52,7 +52,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
-    res.status(201).json(userWithoutPassword);
+    res.status(201).json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -99,7 +99,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
 
     const { passwordHash: _, ...userWithoutPassword } = user;
-    res.status(200).json(userWithoutPassword);
+    res.status(200).json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -123,7 +123,7 @@ export const me = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { passwordHash: _, ...userWithoutPassword } = user;
-    res.status(200).json(userWithoutPassword);
+    res.status(200).json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Me endpoint error:', error);
     res.status(500).json({ error: 'Internal server error' });
