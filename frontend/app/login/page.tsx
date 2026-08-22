@@ -18,13 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-});
+import { useLoginMutation, loginSchema } from "@/hooks/api/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { mutateAsync: login } = useLoginMutation();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -36,27 +34,15 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error("Invalid email or password");
-        } else {
-          toast.error("An error occurred during login");
-        }
-        return;
-      }
-
+      await login(values);
       toast.success("Welcome back to GlobeTrotter");
       router.push("/dashboard");
-    } catch (error) {
-      toast.error("Network error. Please try again later.");
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error("An error occurred during login. Please try again later.");
+      }
     }
   }
 
