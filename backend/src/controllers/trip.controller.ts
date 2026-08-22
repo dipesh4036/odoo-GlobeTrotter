@@ -307,7 +307,25 @@ export const getTripBudget = async (req: Request, res: Response): Promise<void> 
     const byStop = Array.from(byStopMap.entries())
       .map(([stopId, data]) => ({ stopId, cityName: data.cityName, total: data.total }));
 
-    res.status(200).json({ total, byDay, byCategory, byStop });
+    let averageCostPerDay = 0;
+    if (byDayMap.size > 0) {
+      averageCostPerDay = Math.round((total / byDayMap.size) * 100) / 100;
+    }
+
+    const overbudgetStops: Array<{ stopId: string, cityName: string, spent: number, budget: number }> = [];
+    for (const stop of trip.stops) {
+      const stopData = byStopMap.get(stop.id);
+      if (stopData && stop.budget !== null && stopData.total > stop.budget) {
+        overbudgetStops.push({
+          stopId: stop.id,
+          cityName: stop.city.name,
+          spent: stopData.total,
+          budget: stop.budget
+        });
+      }
+    }
+
+    res.status(200).json({ total, byDay, byCategory, byStop, averageCostPerDay, overbudgetStops });
   } catch (error) {
     console.error('Get trip budget error:', error);
     res.status(500).json({ error: 'Internal server error' });
