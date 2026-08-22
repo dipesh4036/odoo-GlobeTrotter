@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -24,6 +25,7 @@ import { useLoginMutation, loginSchema } from "@/api/useAuth";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const { mutateAsync: login } = useLoginMutation();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -37,6 +39,7 @@ function LoginForm() {
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
       await login(values);
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Welcome back to GlobeTrotter");
       
       const redirectTo = searchParams.get("redirect") || "/dashboard";

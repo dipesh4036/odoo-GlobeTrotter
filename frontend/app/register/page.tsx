@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -22,6 +23,7 @@ import { useRegisterMutation, registerSchema } from "@/api/useAuth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutateAsync: register } = useRegisterMutation();
 
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -41,6 +43,7 @@ export default function RegisterPage() {
   async function onSubmit(values: z.infer<typeof registerSchema>) {
     try {
       await register(values);
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Account created successfully");
       router.push("/dashboard");
     } catch (error: any) {
