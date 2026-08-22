@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Users, MapPin, Activity, TrendingUp } from "lucide-react";
-import { useAdminUsersQuery, usePopularCitiesQuery, usePopularActivitiesQuery } from "@/api/useAdmin";
+import { useAdminUsersQuery, usePopularCitiesQuery, usePopularActivitiesQuery, useAdminTrendsQuery } from "@/api/useAdmin";
 import { format } from "date-fns";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import {
   Table,
   TableBody,
@@ -25,6 +26,9 @@ export default function AdminPage() {
   const { data: usersList, isLoading: isUsersLoading } = useAdminUsersQuery();
   const { data: popularCities, isLoading: isCitiesLoading } = usePopularCitiesQuery();
   const { data: popularActivities, isLoading: isActivitiesLoading } = usePopularActivitiesQuery();
+  const { data: trends, isLoading: isTrendsLoading } = useAdminTrendsQuery();
+
+  const PIE_COLORS = ["#8b5cf6", "#10b981", "#f59e0b", "#f43f5e"];
 
   useEffect(() => {
     if (!isLoading && user && user.role !== "ADMIN") {
@@ -195,11 +199,97 @@ export default function AdminPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="trends" className="mt-8">
-            {/* User Trends Tab Content */}
-            <div className="p-8 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
-              <p className="text-zinc-500 font-medium">User Trends & Analytics (WIP)</p>
-            </div>
+          <TabsContent value="trends" className="mt-8 space-y-6">
+            {isTrendsLoading || !trends ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="h-32 bg-white rounded-3xl border border-zinc-200 animate-pulse" />
+                <div className="h-80 md:col-span-2 bg-white rounded-3xl border border-zinc-200 animate-pulse" />
+                <div className="h-80 md:col-span-1 bg-white rounded-3xl border border-zinc-200 animate-pulse" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Summary Stat */}
+                <div className="md:col-span-1 bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm flex flex-col justify-center items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+                    <Users className="w-8 h-8 text-indigo-600" />
+                  </div>
+                  <h4 className="text-zinc-500 font-medium mb-1">Total Users</h4>
+                  <p className="text-5xl font-black text-zinc-900 tracking-tight">{trends.totalUsers}</p>
+                </div>
+
+                {/* Line Chart */}
+                <div className="md:col-span-2 bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm">
+                  <h4 className="font-bold text-lg text-zinc-900 mb-6">Trips Created Per Day</h4>
+                  <div className="h-[250px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trends.tripsCreated} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
+                        <XAxis 
+                          dataKey="date" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#71717a', fontSize: 12 }} 
+                          dy={10}
+                        />
+                        <YAxis 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#71717a', fontSize: 12 }} 
+                        />
+                        <RechartsTooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="count" 
+                          stroke="#6366f1" 
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: "#6366f1", strokeWidth: 2, stroke: "#fff" }}
+                          activeDot={{ r: 6, fill: "#4f46e5", strokeWidth: 0 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Pie Chart */}
+                <div className="md:col-span-1 bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm flex flex-col">
+                  <h4 className="font-bold text-lg text-zinc-900 mb-6 text-center">Trip Status</h4>
+                  <div className="flex-1 min-h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={trends.statusDistribution}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          dataKey="count"
+                          nameKey="status"
+                        >
+                          {trends.statusDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mt-4">
+                    {trends.statusDistribution.map((entry, index) => (
+                      <div key={entry.status} className="flex items-center gap-2 text-xs font-medium text-zinc-600">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                        {entry.status}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

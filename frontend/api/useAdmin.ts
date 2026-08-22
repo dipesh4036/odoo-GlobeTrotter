@@ -46,3 +46,19 @@ export function usePopularActivitiesQuery() {
     },
   });
 }
+
+export interface AdminTrends {
+  totalUsers: number;
+  tripsCreated: { date: string; count: number }[];
+  statusDistribution: { status: string; count: number }[];
+}
+
+export function useAdminTrendsQuery() {
+  return useQuery({
+    queryKey: ["admin", "trends"],
+    queryFn: async (): Promise<AdminTrends> => {
+      const { data } = await apiClient.get("/admin/trends");
+      return data;
+    },
+  });
+}
