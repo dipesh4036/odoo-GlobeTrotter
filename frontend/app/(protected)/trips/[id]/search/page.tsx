@@ -1,13 +1,14 @@
 "use client";
 
 import { use } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useActivitiesQuery } from "@/api/useActivities";
+import { useAddActivityToStopMutation } from "@/api/useStops";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ChevronDown, Activity, DollarSign, ArrowLeft } from "lucide-react";
+import { Search, ChevronDown, Activity, DollarSign, ArrowLeft, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -16,14 +17,42 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function SearchPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const tripId = unwrappedParams.id;
   const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const cityId = searchParams.get("cityId") || undefined;
+  const stopId = searchParams.get("stopId");
   
   const { data: activities, isLoading, isError } = useActivitiesQuery({ cityId });
+  const { mutateAsync: addActivityToStop } = useAddActivityToStopMutation();
+  const [addingActivityId, setAddingActivityId] = useState<string | null>(null);
+
+  const handleAddActivity = async (e: React.MouseEvent, activityId: string) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (!stopId) {
+      toast.error("No section selected to add activity to.");
+      return;
+    }
+
+    setAddingActivityId(activityId);
+    try {
+      // Default to day 1 as requested in previous steps
+      await addActivityToStop({ stopId, data: { activityId, dayNumber: 1 } });
+      toast.success("Activity added to trip!");
+      router.push(`/trips/${tripId}/build`);
+    } catch (err) {
+      toast.error("Failed to add activity to trip.");
+    } finally {
+      setAddingActivityId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
@@ -134,6 +163,20 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
                             <DollarSign className="w-4 h-4 mr-0.5" />
                             {activity.cost}
                           </span>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            className="rounded-full shadow-sm"
+                            onClick={(e) => handleAddActivity(e, activity.id)}
+                            disabled={addingActivityId === activity.id}
+                          >
+                            {addingActivityId === activity.id ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Plus className="w-4 h-4 mr-1" />
+                            )}
+                            Add to Trip
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
