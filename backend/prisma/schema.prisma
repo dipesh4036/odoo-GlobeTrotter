@@ -24,6 +24,7 @@ model User {
   
   trips            Trip[]
   communityPosts   CommunityPost[]
+  savedDestinations SavedDestination[]
 }
 
 enum Role {
@@ -78,8 +79,9 @@ model City {
   popularity Int        @default(0)
   imageUrl   String?
   
-  stops      Stop[]
-  activities Activity[]
+  stops             Stop[]
+  activities        Activity[]
+  savedDestinations SavedDestination[]
 }
 
 model Activity {
@@ -117,4 +119,16 @@ model CommunityPost {
   content   String
   imageUrl  String?
   createdAt DateTime @default(now())
+}
+
+model SavedDestination {
+  id        String   @id @default(cuid())
+  userId    String
+  cityId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cityId])
 }
