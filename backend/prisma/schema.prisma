@@ -1,11 +1,118 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String          @unique
+  phone          String?
+  passwordHash   String
+  city           String?
+  country        String?
+  additionalInfo String?
+  photoUrl       String?
+  role           Role            @default(USER)
+  createdAt      DateTime        @default(now())
+  
+  trips          Trip[]
+  communityPosts CommunityPost[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Trip {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id])
+  name          String
+  description   String?
+  coverPhotoUrl String?
+  startDate     DateTime
+  endDate       DateTime
+  status        TripStatus      @default(UPCOMING)
+  isPublic      Boolean         @default(false)
+  publicSlug    String?         @unique
+  createdAt     DateTime        @default(now())
+  
+  stops          Stop[]
+  communityPosts CommunityPost[]
+}
+
+enum TripStatus {
+  ONGOING
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+model Stop {
+  id         String         @id @default(cuid())
+  tripId     String
+  trip       Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  cityId     String
+  city       City           @relation(fields: [cityId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  budget     Float?
+  order      Int
+  
+  activities StopActivity[]
+}
+
+model City {
+  id         String     @id @default(cuid())
+  name       String
+  country    String
+  costIndex  Float?
+  popularity Int        @default(0)
+  imageUrl   String?
+  
+  stops      Stop[]
+  activities Activity[]
+}
+
+model Activity {
+  id             String         @id @default(cuid())
+  cityId         String
+  city           City           @relation(fields: [cityId], references: [id])
+  name           String
+  description    String?
+  category       String
+  cost           Float
+  durationMin    Int?
+  imageUrl       String?
+  popularity     Int            @default(0)
+  
+  stopActivities StopActivity[]
+}
+
+model StopActivity {
+  id         String   @id @default(cuid())
+  stopId     String
+  stop       Stop     @relation(fields: [stopId], references: [id], onDelete: Cascade)
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id])
+  dayNumber  Int
+  order      Int
+  cost       Float
+}
+
+model CommunityPost {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tripId    String?
+  trip      Trip?    @relation(fields: [tripId], references: [id])
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
 }
