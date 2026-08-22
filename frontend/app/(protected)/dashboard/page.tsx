@@ -22,6 +22,54 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { useCitiesQuery } from "@/api/useCities";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function TopRegionalSelections() {
+  const { data: cities, isLoading } = useCitiesQuery();
+  const displayCities = cities?.slice(0, 5) || [];
+
+  return (
+    <section className="mt-10">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
+          Top Regional Selections
+        </h2>
+      </div>
+      
+      {isLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="aspect-square w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {displayCities.map((city) => (
+            <motion.div
+              key={city.id}
+              whileHover={{ y: -4 }}
+              className="group relative aspect-square rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-zinc-200/50 bg-zinc-100"
+            >
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                style={{ 
+                  backgroundImage: `url(${city.imageUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600&auto=format&fit=crop'})` 
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-4 w-full">
+                <p className="text-white font-medium truncate">{city.name}</p>
+                <p className="text-zinc-300 text-xs truncate">{city.country}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
 
@@ -140,6 +188,9 @@ export default function DashboardPage() {
             
           </div>
         </motion.div>
+
+        {/* Top Regional Selections */}
+        <TopRegionalSelections />
 
         {/* Content Placeholders for future sections */}
         <div className="mt-10 mb-8 border-t border-zinc-100 pt-8" />
