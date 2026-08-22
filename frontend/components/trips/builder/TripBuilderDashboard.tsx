@@ -2,7 +2,6 @@
 
 import { useTripByIdQuery } from "@/api/useTrips";
 import { Skeleton } from "@/components/ui/skeleton";
-import BudgetPanel from "./BudgetPanel";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -94,11 +93,6 @@ export default function TripBuilderDashboard({ tripId }: { tripId: string }) {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Right Sidebar: Analytics */}
-        <div className="w-96 border-l bg-white overflow-y-auto p-6 shrink-0 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10">
-          <BudgetPanel tripId={tripId} />
         </div>
       </div>
     </div>
