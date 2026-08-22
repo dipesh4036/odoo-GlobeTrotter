@@ -22,8 +22,64 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCreateTripMutation, useUploadCoverPhotoMutation, createTripSchema } from "@/api/useTrips";
+import { useActivitiesQuery } from "@/api/useActivities";
+
+function ActivitySuggestions() {
+  const { data: activities, isLoading } = useActivitiesQuery();
+  const displayActivities = activities?.slice(0, 6) || [];
+
+  return (
+    <div className="mt-12">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900 mb-1">
+          Suggestions for Places to Visit / Activities to perform
+        </h2>
+        <p className="text-sm text-zinc-500">
+          Get inspired by popular destinations and things to do.
+        </p>
+      </div>
+      
+      {isLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : displayActivities.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {displayActivities.map((activity) => (
+            <Card key={activity.id} className="overflow-hidden border-zinc-200/60 shadow-sm hover:shadow-md transition-all group cursor-pointer bg-white">
+              <CardContent className="p-0 h-full flex flex-col relative aspect-[4/3]">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${activity.imageUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600&auto=format&fit=crop'})` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-4 w-full">
+                  <h3 className="font-semibold text-white truncate text-base mb-1">
+                    {activity.name}
+                  </h3>
+                  <div className="flex items-center text-xs font-medium text-zinc-300">
+                    <MapIcon className="w-3 h-3 mr-1" />
+                    <span className="truncate">{activity.cityName}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="p-8 border border-dashed border-zinc-200 rounded-2xl text-center">
+          <p className="text-sm text-zinc-500">No suggestions available at the moment.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CreateTripPage() {
   const router = useRouter();
@@ -334,6 +390,10 @@ export default function CreateTripPage() {
             </form>
           </Form>
         </motion.div>
+
+        {/* Suggestions Section */}
+        <ActivitySuggestions />
+
       </main>
     </div>
   );
