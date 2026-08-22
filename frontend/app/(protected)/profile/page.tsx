@@ -1,28 +1,42 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useUpdateUserMutation } from "@/api/useAuth";
+import { useUpdateUserMutation, useSavedDestinationsQuery, useRemoveSavedDestinationMutation, updateUserSchema, UpdateUserCredentials, SavedDestination } from "@/api/useAuth";
 import { useTripsQuery } from "@/api/useTrips";
 import { TripCard } from "@/components/trips/TripCard";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateUserSchema, UpdateUserCredentials } from "@/api/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Camera, UserCircle } from "lucide-react";
-import { motion } from "motion/react";
+import { Loader2, Camera, UserCircle, Trash2, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProfilePage() {
   const { user, isLoading: isUserLoading, refetch } = useAuth();
+  const queryClient = useQueryClient();
   const { mutateAsync: updateUser, isPending: isUpdating } = useUpdateUserMutation();
   
   const { data: upcomingTrips, isLoading: isUpcomingLoading } = useTripsQuery("UPCOMING");
   const { data: completedTrips, isLoading: isCompletedLoading } = useTripsQuery("COMPLETED");
+
+  const { data: savedDestinations, isLoading: isSavedDestinationsLoading } = useSavedDestinationsQuery();
+  const { mutateAsync: removeSavedDestination, isPending: isRemovingDestination } = useRemoveSavedDestinationMutation();
+
+  const handleRemoveSavedDestination = async (cityId: string) => {
+    try {
+      await removeSavedDestination(cityId);
+      toast.success("Destination removed successfully.");
+      queryClient.invalidateQueries({ queryKey: ["savedDestinations"] });
+    } catch (error) {
+      toast.error("Failed to remove destination.");
+    }
+  };
 
   const form = useForm<UpdateUserCredentials>({
     resolver: zodResolver(updateUserSchema),
@@ -192,6 +206,53 @@ export default function ProfilePage() {
                     <TripCard trip={trip} />
                   </motion.div>
                 ))}
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h3 className="text-2xl font-bold tracking-tight text-zinc-900 mb-6">Saved Destinations</h3>
+            {isSavedDestinationsLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => <div key={i} className="h-40 bg-zinc-200 rounded-2xl animate-pulse" />)}
+              </div>
+            ) : savedDestinations?.length === 0 ? (
+              <div className="p-12 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
+                <MapPin className="w-10 h-10 text-zinc-300 mx-auto mb-4" />
+                <p className="text-zinc-500 font-medium">No saved destinations.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <AnimatePresence>
+                  {savedDestinations?.map((dest: SavedDestination, idx: number) => (
+                    <motion.div
+                      key={dest.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ delay: idx * 0.05, duration: 0.2 }}
+                      className="group relative h-40 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all"
+                    >
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                        style={{ backgroundImage: `url(${dest.imageUrl || 'https://images.unsplash.com/photo-1517713982677-4b66332f98de?q=80&w=400&auto=format&fit=crop'})` }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h4 className="font-bold text-white text-lg line-clamp-1">{dest.cityName}</h4>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleRemoveSavedDestination(dest.cityId)}
+                        disabled={isRemovingDestination}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </section>

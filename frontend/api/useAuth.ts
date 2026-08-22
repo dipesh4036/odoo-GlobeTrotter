@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { z } from "zod";
 
@@ -90,6 +90,34 @@ export function useUpdateUserMutation() {
   return useMutation({
     mutationFn: async (credentials: UpdateUserCredentials) => {
       const { data } = await apiClient.patch("/users/me", credentials);
+      return data;
+    },
+  });
+}
+
+export interface SavedDestination {
+  id: string;
+  userId: string;
+  cityId: string;
+  cityName: string;
+  imageUrl: string | null;
+  savedAt: string;
+}
+
+export function useSavedDestinationsQuery() {
+  return useQuery({
+    queryKey: ["savedDestinations"],
+    queryFn: async (): Promise<SavedDestination[]> => {
+      const { data } = await apiClient.get("/users/me/saved-destinations");
+      return data;
+    },
+  });
+}
+
+export function useRemoveSavedDestinationMutation() {
+  return useMutation({
+    mutationFn: async (cityId: string) => {
+      const { data } = await apiClient.delete(`/users/me/saved-destinations/${cityId}`);
       return data;
     },
   });
