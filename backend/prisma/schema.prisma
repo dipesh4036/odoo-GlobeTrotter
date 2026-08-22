@@ -35,7 +35,7 @@ enum Role {
 model Trip {
   id            String          @id @default(cuid())
   userId        String
-  user          User            @relation(fields: [userId], references: [id])
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   name          String
   description   String?
   coverPhotoUrl String?
@@ -113,7 +113,7 @@ model StopActivity {
 model CommunityPost {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tripId    String?
   trip      Trip?    @relation(fields: [tripId], references: [id])
   content   String
