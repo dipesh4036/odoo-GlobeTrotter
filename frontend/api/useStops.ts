@@ -32,3 +32,18 @@ export function useCreateStopMutation() {
   });
 }
 
+interface AddActivityData {
+  activityId: string;
+  dayNumber: number;
+}
+
+export function useAddActivityToStopMutation() {
+  return useMutation({
+    mutationFn: async ({ stopId, data }: { stopId: string; data: AddActivityData }) => {
+      const response = await apiClient.post(`/stops/${stopId}/activities`, data);
+      return response.data;
+    },
+  });
+}
+
+
