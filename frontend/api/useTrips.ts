@@ -109,3 +109,21 @@ export function usePublishTripMutation() {
     },
   });
 }
+
+export function useCancelTripMutation() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.post(`/trips/${id}/cancel`);
+      return data;
+    },
+  });
+}
+
+export function useDeleteTripMutation() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.delete(`/trips/${id}`);
+      return data;
+    },
+  });
+}
