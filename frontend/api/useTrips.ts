@@ -27,6 +27,17 @@ export function useTripsQuery(status?: string) {
   });
 }
 
+export function useTripByIdQuery(id: string) {
+  return useQuery({
+    queryKey: ["trips", id],
+    queryFn: async (): Promise<Trip & { stops: any[] }> => {
+      const { data } = await apiClient.get(`/trips/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
 import { z } from "zod";
 
 export const createTripSchema = z.object({
