@@ -411,3 +411,42 @@ export const publishTrip = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const uploadCoverPhotoController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    if (!req.file) {
+      res.status(400).json({ error: 'No cover photo file provided or invalid type/size.' });
+      return;
+    }
+
+    const trip = await prisma.trip.findUnique({ where: { id } });
+    if (!trip) {
+      res.status(404).json({ error: 'Trip not found' });
+      return;
+    }
+
+    if (trip.userId !== req.user.userId) {
+      res.status(403).json({ error: 'Forbidden: You do not own this trip' });
+      return;
+    }
+
+    const coverPhotoUrl = `/uploads/covers/${req.file.filename}`;
+
+    const updatedTrip = await prisma.trip.update({
+      where: { id },
+      data: { coverPhotoUrl }
+    });
+
+    res.status(200).json(updatedTrip);
+  } catch (error) {
+    console.error('Upload cover photo error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
