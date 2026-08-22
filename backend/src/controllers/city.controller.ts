@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 
 export const getCities = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { search, country } = req.query;
+    const { search, country, region } = req.query;
     
     const where: any = {};
     if (search && typeof search === 'string') {
@@ -11,6 +11,9 @@ export const getCities = async (req: Request, res: Response): Promise<void> => {
     }
     if (country && typeof country === 'string') {
       where.country = country; // Exact match
+    }
+    if (region && typeof region === 'string') {
+      where.region = region; // Exact match
     }
 
     const cities = await prisma.city.findMany({

@@ -44,11 +44,11 @@ async function main() {
   });
 
   // 2. Create Cities
-  const paris = await prisma.city.create({ data: { name: 'Paris', country: 'France', costIndex: 85, popularity: 95 } });
-  const tokyo = await prisma.city.create({ data: { name: 'Tokyo', country: 'Japan', costIndex: 90, popularity: 100 } });
-  const bangkok = await prisma.city.create({ data: { name: 'Bangkok', country: 'Thailand', costIndex: 40, popularity: 90 } });
-  const rome = await prisma.city.create({ data: { name: 'Rome', country: 'Italy', costIndex: 80, popularity: 92 } });
-  const nyc = await prisma.city.create({ data: { name: 'New York', country: 'USA', costIndex: 100, popularity: 98 } });
+  const paris = await prisma.city.create({ data: { name: 'Paris', country: 'France', region: 'Europe', costIndex: 85, popularity: 95 } });
+  const tokyo = await prisma.city.create({ data: { name: 'Tokyo', country: 'Japan', region: 'Asia', costIndex: 90, popularity: 100 } });
+  const bangkok = await prisma.city.create({ data: { name: 'Bangkok', country: 'Thailand', region: 'Southeast Asia', costIndex: 40, popularity: 90 } });
+  const rome = await prisma.city.create({ data: { name: 'Rome', country: 'Italy', region: 'Europe', costIndex: 80, popularity: 92 } });
+  const nyc = await prisma.city.create({ data: { name: 'New York', country: 'USA', region: 'North America', costIndex: 100, popularity: 98 } });
 
   // 3. Create Activities (15 total distributed)
   await prisma.activity.createMany({

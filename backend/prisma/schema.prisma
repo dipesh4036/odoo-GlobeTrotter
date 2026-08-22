@@ -76,6 +76,7 @@ model City {
   id         String     @id @default(cuid())
   name       String
   country    String
+  region     String?
   costIndex  Float?
   popularity Int        @default(0)
   imageUrl   String?

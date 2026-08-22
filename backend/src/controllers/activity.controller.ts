@@ -36,3 +36,27 @@ export const getActivities = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getActivityById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const activity = await prisma.activity.findUnique({
+      where: { id },
+      include: {
+        city: {
+          select: { name: true }
+        }
+      }
+    });
+
+    if (!activity) {
+      res.status(404).json({ error: 'Activity not found' });
+      return;
+    }
+
+    res.status(200).json(activity);
+  } catch (error) {
+    console.error('getActivityById error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
