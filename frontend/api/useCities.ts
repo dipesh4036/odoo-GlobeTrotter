@@ -11,11 +11,11 @@ export interface City {
   imageUrl: string | null;
 }
 
-export function useCitiesQuery() {
+export function useCitiesQuery(params?: { search?: string; country?: string; region?: string }) {
   return useQuery({
-    queryKey: ["cities"],
+    queryKey: ["cities", params],
     queryFn: async (): Promise<City[]> => {
-      const { data } = await apiClient.get("/cities");
+      const { data } = await apiClient.get("/cities", { params });
       return data;
     },
   });
