@@ -242,3 +242,120 @@ export const cancelTrip = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getTripBudget = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const trip = await prisma.trip.findUnique({
+      where: { id },
+      include: {
+        stops: {
+          include: {
+            city: true,
+            activities: {
+              include: { activity: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!trip) {
+      res.status(404).json({ error: 'Trip not found' });
+      return;
+    }
+
+    if (trip.userId !== req.user.userId) {
+      res.status(403).json({ error: 'Forbidden: You do not own this trip' });
+      return;
+    }
+
+    let total = 0;
+    const byDayMap = new Map<number, number>();
+    const byCategoryMap = new Map<string, number>();
+    const byStopMap = new Map<string, { cityName: string, total: number }>();
+
+    for (const stop of trip.stops) {
+      let stopTotal = 0;
+      for (const sa of stop.activities) {
+        const cost = sa.cost;
+        total += cost;
+        stopTotal += cost;
+        
+        byDayMap.set(sa.dayNumber, (byDayMap.get(sa.dayNumber) || 0) + cost);
+        
+        const cat = sa.activity.category;
+        byCategoryMap.set(cat, (byCategoryMap.get(cat) || 0) + cost);
+      }
+      byStopMap.set(stop.id, { cityName: stop.city.name, total: stopTotal });
+    }
+
+    const byDay = Array.from(byDayMap.entries())
+      .map(([dayNumber, total]) => ({ dayNumber, total }))
+      .sort((a,b) => a.dayNumber - b.dayNumber);
+      
+    const byCategory = Array.from(byCategoryMap.entries())
+      .map(([category, total]) => ({ category, total }));
+      
+    const byStop = Array.from(byStopMap.entries())
+      .map(([stopId, data]) => ({ stopId, cityName: data.cityName, total: data.total }));
+
+    res.status(200).json({ total, byDay, byCategory, byStop });
+  } catch (error) {
+    console.error('Get trip budget error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getTripCalendar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const trip = await prisma.trip.findUnique({
+      where: { id },
+      include: {
+        stops: {
+          include: { city: true },
+          orderBy: { order: 'asc' }
+        }
+      }
+    });
+
+    if (!trip) {
+      res.status(404).json({ error: 'Trip not found' });
+      return;
+    }
+
+    if (trip.userId !== req.user.userId) {
+      res.status(403).json({ error: 'Forbidden: You do not own this trip' });
+      return;
+    }
+
+    const stops = trip.stops.map(s => ({
+      stopId: s.id,
+      cityName: s.city.name,
+      startDate: s.startDate,
+      endDate: s.endDate
+    }));
+
+    res.status(200).json({
+      startDate: trip.startDate,
+      endDate: trip.endDate,
+      stops
+    });
+  } catch (error) {
+    console.error('Get trip calendar error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
