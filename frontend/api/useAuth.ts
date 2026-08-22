@@ -54,3 +54,22 @@ export function useForgotPasswordMutation() {
     },
   });
 }
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, { message: "Token is required" }),
+  newPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
+  confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+export type ResetPasswordCredentials = z.infer<typeof resetPasswordSchema>;
+
+export function useResetPasswordMutation() {
+  return useMutation({
+    mutationFn: async ({ token, newPassword }: Pick<ResetPasswordCredentials, 'token' | 'newPassword'>) => {
+      const { data } = await apiClient.post("/auth/reset-password", { token, newPassword });
+      return data;
+    },
+  });
+}
