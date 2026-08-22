@@ -5,7 +5,7 @@ import { ShareActions } from "./ShareActions";
 import { format } from "date-fns";
 
 async function getSharedTrip(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
   try {
     const res = await fetch(`${apiUrl}/public/trips/${slug}`, {
       next: { revalidate: 60 } // optional ISR

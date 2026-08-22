@@ -3,11 +3,12 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { ArrowRight, Loader2, PlaneTakeoff } from "lucide-react";
+import Image from "next/image";
 
 import {
   Form,
@@ -20,8 +21,9 @@ import {
 
 import { useLoginMutation, loginSchema } from "@/api/useAuth";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutateAsync: login } = useLoginMutation();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -36,7 +38,9 @@ export default function LoginPage() {
     try {
       await login(values);
       toast.success("Welcome back to GlobeTrotter");
-      router.push("/dashboard");
+      
+      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      router.push(redirectTo);
     } catch (error: any) {
       if (error.response?.status === 401) {
         toast.error("Invalid email or password");
@@ -47,11 +51,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 relative overflow-hidden selection:bg-indigo-500/30">
-      {/* Subtle Background Effects */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-rose-500/10 blur-[120px]" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden selection:bg-indigo-500/30">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/auth-bg.jpg"
+          alt="Abstract Background"
+          fill
+          className="object-cover opacity-60"
+          priority
+        />
+        {/* Very subtle overlay to ensure contrast */}
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
       </div>
 
       <motion.div
@@ -61,7 +72,7 @@ export default function LoginPage() {
           duration: 0.8,
           ease: [0.23, 1, 0.32, 1], // ease-out-expo
         }}
-        className="w-full max-w-md px-6 py-10 sm:px-12 sm:py-12 bg-white/70 backdrop-blur-xl border border-zinc-200/50 rounded-[2rem] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] relative z-10"
+        className="w-full max-w-md px-6 py-10 sm:px-12 sm:py-12 bg-white/80 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-2xl relative z-10"
       >
         <div className="flex flex-col items-center mb-8 text-center space-y-2">
           <motion.div 
@@ -161,5 +172,15 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-zinc-50"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
