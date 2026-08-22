@@ -127,3 +127,23 @@ export function useDeleteTripMutation() {
     },
   });
 }
+
+export interface CalendarEvent {
+  id: string;
+  tripId: string;
+  stopId: string;
+  cityName: string;
+  startDate: string;
+  endDate: string;
+}
+
+export function useTripCalendarQuery(id: string) {
+  return useQuery({
+    queryKey: ["trips", id, "calendar"],
+    queryFn: async (): Promise<CalendarEvent[]> => {
+      const { data } = await apiClient.get(`/trips/${id}/calendar`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
