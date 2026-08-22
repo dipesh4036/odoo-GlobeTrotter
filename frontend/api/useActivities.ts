@@ -23,3 +23,14 @@ export function useActivitiesQuery(params?: { cityId?: string; category?: string
     },
   });
 }
+
+export function useActivityByIdQuery(id: string | null) {
+  return useQuery({
+    queryKey: ["activities", id],
+    queryFn: async (): Promise<Activity> => {
+      const { data } = await apiClient.get(`/activities/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}

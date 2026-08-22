@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ChevronDown, Activity, DollarSign, ArrowLeft, Plus, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Search, ChevronDown, Activity, DollarSign, ArrowLeft, Plus, Loader2, Clock } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -19,6 +20,88 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useState } from "react";
+
+import { useActivityByIdQuery } from "@/api/useActivities";
+
+function ActivityQuickViewDialog({ 
+  activityId, 
+  open, 
+  onOpenChange,
+  onAdd,
+  isAdding
+}: { 
+  activityId: string | null; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+  onAdd: (activityId: string) => void;
+  isAdding: boolean;
+}) {
+  const { data: activity, isLoading } = useActivityByIdQuery(activityId);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] rounded-3xl p-0 overflow-hidden border-0 bg-white">
+        {isLoading || !activity ? (
+          <div className="h-[400px] w-full flex items-center justify-center bg-zinc-50">
+            <Loader2 className="w-8 h-8 animate-spin text-zinc-300" />
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <div className="relative w-full h-64">
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${activity.imageUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600&auto=format&fit=crop'})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider">
+                    {activity.category}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-[10px] font-bold text-white tracking-wider flex items-center">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {activity.durationMin} MIN
+                  </span>
+                </div>
+                <DialogTitle className="text-2xl font-bold tracking-tight text-white line-clamp-2 leading-tight">
+                  {activity.name}
+                </DialogTitle>
+              </div>
+            </div>
+            
+            <div className="p-6 pb-8">
+              <p className="text-zinc-600 text-sm leading-relaxed mb-8">
+                {activity.description || "No description available for this activity."}
+              </p>
+              
+              <div className="flex items-center justify-between mt-auto">
+                <div>
+                  <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-0.5">Estimated Cost</p>
+                  <span className="flex items-center text-xl font-bold text-zinc-900">
+                    <DollarSign className="w-5 h-5 -ml-1 text-indigo-600" />
+                    {activity.cost}
+                  </span>
+                </div>
+                <Button 
+                  className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white min-w-[140px] h-12 shadow-md shadow-indigo-200"
+                  onClick={() => onAdd(activity.id)}
+                  disabled={isAdding}
+                >
+                  {isAdding ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4 mr-2" />
+                  )}
+                  Add to Trip
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function SearchPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -32,9 +115,10 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
   const { data: activities, isLoading, isError } = useActivitiesQuery({ cityId });
   const { mutateAsync: addActivityToStop } = useAddActivityToStopMutation();
   const [addingActivityId, setAddingActivityId] = useState<string | null>(null);
+  const [quickViewActivityId, setQuickViewActivityId] = useState<string | null>(null);
 
-  const handleAddActivity = async (e: React.MouseEvent, activityId: string) => {
-    e.stopPropagation(); // Prevent card click
+  const handleAddActivity = async (activityId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent card click
     
     if (!stopId) {
       toast.error("No section selected to add activity to.");
@@ -144,7 +228,10 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05, duration: 0.3 }}
                   >
-                    <Card className="overflow-hidden border-zinc-200/60 shadow-sm hover:shadow-md transition-all group cursor-pointer bg-white h-full flex flex-col">
+                    <Card 
+                      className="overflow-hidden border-zinc-200/60 shadow-sm hover:shadow-md transition-all group cursor-pointer bg-white h-full flex flex-col"
+                      onClick={() => setQuickViewActivityId(activity.id)}
+                    >
                       <div className="relative aspect-[4/3] w-full overflow-hidden">
                         <div 
                           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
@@ -166,8 +253,8 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
                           <Button 
                             size="sm" 
                             variant="secondary"
-                            className="rounded-full shadow-sm"
-                            onClick={(e) => handleAddActivity(e, activity.id)}
+                            className="rounded-full shadow-sm relative z-10"
+                            onClick={(e) => handleAddActivity(activity.id, e)}
                             disabled={addingActivityId === activity.id}
                           >
                             {addingActivityId === activity.id ? (
@@ -188,6 +275,14 @@ export default function SearchPage({ params }: { params: Promise<{ id: string }>
         </div>
 
       </main>
+      
+      <ActivityQuickViewDialog 
+        open={!!quickViewActivityId} 
+        activityId={quickViewActivityId} 
+        onOpenChange={(open) => !open && setQuickViewActivityId(null)}
+        onAdd={(id) => handleAddActivity(id)}
+        isAdding={addingActivityId === quickViewActivityId && quickViewActivityId !== null}
+      />
     </div>
   );
 }
