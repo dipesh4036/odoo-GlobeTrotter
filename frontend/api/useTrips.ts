@@ -81,4 +81,22 @@ export function useUploadCoverPhotoMutation() {
   });
 }
 
+export interface TripBudget {
+  total: number;
+  averageCostPerDay: number;
+  byDay: { dayNumber: number; total: number }[];
+  byCategory: { category: string; total: number }[];
+  byStop: { stopId: string; cityName: string; total: number }[];
+  overbudgetStops: { stopId: string; cityName: string; spent: number; budget: number }[];
+}
 
+export function useTripBudgetQuery(id: string) {
+  return useQuery({
+    queryKey: ["trips", id, "budget"],
+    queryFn: async (): Promise<TripBudget> => {
+      const { data } = await apiClient.get(`/trips/${id}/budget`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}

@@ -1,19 +1,25 @@
 "use client";
 
-import { use } from "react";
-import { useTripByIdQuery } from "@/api/useTrips";
+import { useState, use } from "react";
+import { useTripByIdQuery, useTripBudgetQuery } from "@/api/useTrips";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map } from "lucide-react";
+import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map, PieChart as PieChartIcon, BarChart2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 export default function ItineraryViewPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
   const tripId = unwrappedParams.id;
   
   const { data: trip, isLoading, isError } = useTripByIdQuery(tripId);
+  const { data: budget } = useTripBudgetQuery(tripId);
+  
+  const [chartType, setChartType] = useState<"pie" | "bar">("pie");
+  const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   if (isLoading) {
     return (
@@ -96,6 +102,110 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
             </span>
           </div>
         </div>
+
+        {/* Budget Summary Info */}
+        {budget && (
+          <div className="mb-12 max-w-3xl">
+            <Card className="rounded-3xl border-zinc-200 shadow-sm overflow-hidden bg-white">
+              <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl font-bold tracking-tight text-zinc-900">Budget Summary</CardTitle>
+                  <div className="flex items-center gap-2 p-1 bg-zinc-200/50 rounded-lg">
+                    <button 
+                      onClick={() => setChartType("pie")}
+                      className={`p-1.5 rounded-md transition-all ${chartType === "pie" ? "bg-white shadow-sm text-indigo-600" : "text-zinc-500 hover:text-zinc-900"}`}
+                    >
+                      <PieChartIcon className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setChartType("bar")}
+                      className={`p-1.5 rounded-md transition-all ${chartType === "bar" ? "bg-white shadow-sm text-indigo-600" : "text-zinc-500 hover:text-zinc-900"}`}
+                    >
+                      <BarChart2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
+                  <div className="flex flex-col gap-1 items-center sm:items-start w-full">
+                    <span className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Total Spent</span>
+                    <span className="text-3xl font-black text-zinc-900 flex items-center tracking-tight">
+                      <DollarSign className="w-7 h-7 -mr-1 text-zinc-400" />
+                      {budget.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="h-12 w-px bg-zinc-200 hidden sm:block" />
+                  <div className="flex flex-col gap-1 items-center sm:items-start w-full">
+                    <span className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Avg / Day</span>
+                    <span className="text-3xl font-black text-zinc-900 flex items-center tracking-tight">
+                      <DollarSign className="w-7 h-7 -mr-1 text-zinc-400" />
+                      {budget.averageCostPerDay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    {chartType === "pie" ? (
+                      <PieChart>
+                        <Pie
+                          data={budget.byCategory}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={3}
+                          dataKey="total"
+                          nameKey="category"
+                        >
+                          {budget.byCategory.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Spent']} 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)' }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 500 }} />
+                      </PieChart>
+                    ) : (
+                      <BarChart data={budget.byDay}>
+                        <XAxis dataKey="dayNumber" tickFormatter={(val) => `Day ${val}`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#71717a' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#71717a' }} tickFormatter={(val) => `$${val}`} />
+                        <Tooltip 
+                          formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Spent']}
+                          labelFormatter={(label: any) => `Day ${label}`}
+                          cursor={{ fill: '#f4f4f5', radius: 4 }}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)' }}
+                        />
+                        <Bar dataKey="total" fill="#6366f1" radius={[4, 4, 4, 4]} barSize={32} />
+                      </BarChart>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+
+                {budget.overbudgetStops?.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    {budget.overbudgetStops.map((stop) => (
+                      <div key={stop.stopId} className="flex items-center justify-between p-3 rounded-xl bg-rose-50 border border-rose-100">
+                        <div className="flex items-center gap-2 text-sm">
+                          <AlertTriangle className="w-4 h-4 text-rose-500" />
+                          <span className="font-semibold text-rose-900">{stop.cityName} is over budget</span>
+                        </div>
+                        <div className="text-xs font-medium text-rose-700 bg-rose-100/50 px-2.5 py-1 rounded-md">
+                          Spent ${stop.spent} / ${stop.budget}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Itinerary Timeline */}
         <div className="space-y-12 max-w-3xl">
