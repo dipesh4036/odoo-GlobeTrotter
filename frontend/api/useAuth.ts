@@ -40,3 +40,17 @@ export function useRegisterMutation() {
   });
 }
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+});
+
+export type ForgotPasswordCredentials = z.infer<typeof forgotPasswordSchema>;
+
+export function useForgotPasswordMutation() {
+  return useMutation({
+    mutationFn: async (credentials: ForgotPasswordCredentials) => {
+      const { data } = await apiClient.post("/auth/forgot-password", credentials);
+      return data;
+    },
+  });
+}
