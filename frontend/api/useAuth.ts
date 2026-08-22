@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { z } from "zod";
 
@@ -69,6 +69,64 @@ export function useResetPasswordMutation() {
   return useMutation({
     mutationFn: async ({ token, newPassword }: Pick<ResetPasswordCredentials, 'token' | 'newPassword'>) => {
       const { data } = await apiClient.post("/auth/reset-password", { token, newPassword });
+      return data;
+    },
+  });
+}
+
+export const updateUserSchema = z.object({
+  firstName: z.string().min(2, { message: "First name is required." }),
+  lastName: z.string().min(2, { message: "Last name is required." }),
+  phone: z.string().optional(),
+  city: z.string().min(2, { message: "City is required." }),
+  country: z.string().min(2, { message: "Country is required." }),
+  additionalInfo: z.string().optional(),
+  languageId: z.string().optional(),
+});
+
+export type UpdateUserCredentials = z.infer<typeof updateUserSchema>;
+
+export function useUpdateUserMutation() {
+  return useMutation({
+    mutationFn: async (credentials: UpdateUserCredentials) => {
+      const { data } = await apiClient.patch("/users/me", credentials);
+      return data;
+    },
+  });
+}
+
+export interface SavedDestination {
+  id: string;
+  userId: string;
+  cityId: string;
+  cityName: string;
+  imageUrl: string | null;
+  savedAt: string;
+}
+
+export function useSavedDestinationsQuery() {
+  return useQuery({
+    queryKey: ["savedDestinations"],
+    queryFn: async (): Promise<SavedDestination[]> => {
+      const { data } = await apiClient.get("/users/me/saved-destinations");
+      return data;
+    },
+  });
+}
+
+export function useRemoveSavedDestinationMutation() {
+  return useMutation({
+    mutationFn: async (cityId: string) => {
+      const { data } = await apiClient.delete(`/users/me/saved-destinations/${cityId}`);
+      return data;
+    },
+  });
+}
+
+export function useDeleteAccountMutation() {
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.delete("/users/me");
       return data;
     },
   });

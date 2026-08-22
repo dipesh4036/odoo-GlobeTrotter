@@ -9,7 +9,11 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  // Add other user fields as per API_CONTRACT
+  phone?: string;
+  city?: string;
+  country?: string;
+  additionalInfo?: string;
+  languageId?: string;
 }
 
 interface AuthContextType {
