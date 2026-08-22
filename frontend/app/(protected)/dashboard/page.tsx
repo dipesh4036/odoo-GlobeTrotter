@@ -23,7 +23,76 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { useCitiesQuery } from "@/api/useCities";
+import { useTripsQuery } from "@/api/useTrips";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
+import { format } from "date-fns";
+
+function PreviousTrips() {
+  const { data: trips, isLoading } = useTripsQuery("COMPLETED");
+  
+  // Filter out any accidentally returned CANCELLED trips just to be safe,
+  // and take up to 3 trips.
+  const displayTrips = (trips || [])
+    .filter((trip) => trip.status !== "CANCELLED")
+    .slice(0, 3);
+
+  return (
+    <section className="mt-12 relative pb-16">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
+          Previous Trips
+        </h2>
+      </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+          ))}
+        </div>
+      ) : displayTrips.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {displayTrips.map((trip) => (
+            <Card key={trip.id} className="overflow-hidden border-zinc-200/60 shadow-sm hover:shadow-md transition-shadow group cursor-pointer bg-white">
+              <CardContent className="p-0 h-full flex flex-col">
+                <div className="h-16 w-full bg-zinc-100 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${trip.coverPhotoUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=600&auto=format&fit=crop'})` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 to-transparent" />
+                </div>
+                <div className="p-4 flex flex-col flex-1 justify-between">
+                  <h3 className="font-semibold text-zinc-900 truncate group-hover:text-indigo-600 transition-colors">
+                    {trip.name}
+                  </h3>
+                  <div className="mt-2 text-xs text-zinc-500 font-medium">
+                    {format(new Date(trip.startDate), "MMM d, yyyy")} - {format(new Date(trip.endDate), "MMM d, yyyy")}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="p-8 border border-dashed border-zinc-200 rounded-2xl text-center">
+          <p className="text-sm text-zinc-500">No previous trips found.</p>
+        </div>
+      )}
+
+      {/* Plan a Trip Button positioned bottom-right */}
+      <div className="absolute -bottom-2 right-0">
+        <Link href="/trips/new">
+          <Button className="rounded-xl shadow-md shadow-indigo-500/10 hover:shadow-lg transition-all bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+            + Plan a Trip
+          </Button>
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 function TopRegionalSelections() {
   const { data: cities, isLoading } = useCitiesQuery();
@@ -191,6 +260,9 @@ export default function DashboardPage() {
 
         {/* Top Regional Selections */}
         <TopRegionalSelections />
+
+        {/* Previous Trips Section */}
+        <PreviousTrips />
 
         {/* Content Placeholders for future sections */}
         <div className="mt-10 mb-8 border-t border-zinc-100 pt-8" />
