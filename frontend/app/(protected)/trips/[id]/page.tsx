@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, use } from "react";
-import { useTripByIdQuery, useTripBudgetQuery } from "@/api/useTrips";
+import { useTripByIdQuery, useTripBudgetQuery, usePublishTripMutation } from "@/api/useTrips";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map, PieChart as PieChartIcon, BarChart2, AlertTriangle } from "lucide-react";
+import { MapPin, ArrowDown, DollarSign, Calendar, Edit3, Map, PieChart as PieChartIcon, BarChart2, AlertTriangle, Share2, Copy, Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 export default function ItineraryViewPage({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = use(params);
@@ -17,9 +20,33 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
   
   const { data: trip, isLoading, isError } = useTripByIdQuery(tripId);
   const { data: budget } = useTripBudgetQuery(tripId);
+  const { mutateAsync: publishTrip, isPending: isPublishing } = usePublishTripMutation();
   
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [publicSlug, setPublicSlug] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+  const handleShare = async () => {
+    try {
+      const data = await publishTrip(tripId);
+      setPublicSlug(data.publicSlug);
+      setIsShareOpen(true);
+    } catch (err) {
+      toast.error("Failed to publish trip. Please try again.");
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (!publicSlug) return;
+    const link = `${window.location.origin}/share/${publicSlug}`;
+    navigator.clipboard.writeText(link);
+    setIsCopied(true);
+    toast.success("Link copied to clipboard!");
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   if (isLoading) {
     return (
@@ -75,6 +102,16 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
             </Link>
           </div>
           <div className="flex items-center gap-3">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="rounded-lg h-9 shadow-sm"
+              onClick={handleShare}
+              disabled={isPublishing}
+            >
+              {isPublishing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Share2 className="w-4 h-4 mr-2" />}
+              Share
+            </Button>
             <Link href={`/trips/${tripId}/build`}>
               <Button variant="outline" size="sm" className="rounded-lg h-9 shadow-sm">
                 <Edit3 className="w-4 h-4 mr-2" />
@@ -84,6 +121,29 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </header>
+
+      <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Share your itinerary</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <p className="text-sm text-zinc-500">
+              Anyone with this link will be able to view your trip itinerary.
+            </p>
+            <div className="flex items-center space-x-2">
+              <Input 
+                readOnly 
+                value={publicSlug ? `${window.location.origin}/share/${publicSlug}` : ""} 
+                className="flex-1 bg-zinc-50 rounded-xl"
+              />
+              <Button size="icon" onClick={handleCopyLink} className="rounded-xl flex-shrink-0">
+                {isCopied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-10">
         

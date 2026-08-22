@@ -100,3 +100,12 @@ export function useTripBudgetQuery(id: string) {
     enabled: !!id,
   });
 }
+
+export function usePublishTripMutation() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await apiClient.post(`/trips/${id}/publish`);
+      return data as { publicSlug: string };
+    },
+  });
+}
