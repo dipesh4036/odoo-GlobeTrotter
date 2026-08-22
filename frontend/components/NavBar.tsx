@@ -23,7 +23,6 @@ const NAV_LINKS = [
   { name: "Home", href: "/dashboard", icon: Home },
   { name: "My Trips", href: "/trips", icon: MapPin },
   { name: "Explore", href: "/community", icon: Compass },
-  { name: "Budget", href: "/budget", icon: DollarSign },
   { name: "Profile", href: "/profile", icon: UserIcon },
 ];
 
