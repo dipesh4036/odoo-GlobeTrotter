@@ -73,3 +73,24 @@ export function useResetPasswordMutation() {
     },
   });
 }
+
+export const updateUserSchema = z.object({
+  firstName: z.string().min(2, { message: "First name is required." }),
+  lastName: z.string().min(2, { message: "Last name is required." }),
+  phone: z.string().optional(),
+  city: z.string().min(2, { message: "City is required." }),
+  country: z.string().min(2, { message: "Country is required." }),
+  additionalInfo: z.string().optional(),
+  languageId: z.string().optional(),
+});
+
+export type UpdateUserCredentials = z.infer<typeof updateUserSchema>;
+
+export function useUpdateUserMutation() {
+  return useMutation({
+    mutationFn: async (credentials: UpdateUserCredentials) => {
+      const { data } = await apiClient.patch("/users/me", credentials);
+      return data;
+    },
+  });
+}
