@@ -77,14 +77,18 @@ export default function ItineraryViewPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // Extract all activities and group by dayNumber
-  const activitiesByDay = trip.stops?.reduce((acc, stop) => {
-    stop.activities?.forEach((act: any) => {
-      const dayStr = act.dayNumber?.toString() || "1";
+  const activitiesByDay = trip.stops?.reduce((acc: any, stop: any) => {
+    stop.activities?.forEach((stopAct: any) => {
+      const dayStr = stopAct.dayNumber?.toString() || "1";
       if (!acc[dayStr]) {
         acc[dayStr] = [];
       }
-      acc[dayStr].push({ ...act, cityName: stop.cityName });
+      acc[dayStr].push({ 
+        id: stopAct.id,
+        name: stopAct.activity?.name || "Unknown Activity",
+        cost: stopAct.activity?.cost || 0,
+        cityName: stop.cityName 
+      });
     });
     return acc;
   }, {} as Record<string, any[]>) || {};

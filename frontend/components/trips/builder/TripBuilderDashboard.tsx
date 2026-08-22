@@ -78,7 +78,7 @@ export default function TripBuilderDashboard({ tripId }: { tripId: string }) {
                         stop.activities?.map((act: any) => (
                           <div key={act.id} className="flex justify-between items-center bg-zinc-50 p-2 rounded-md">
                             <span className="text-sm">{act.activity?.name || "Activity"}</span>
-                            <span className="text-xs font-medium text-emerald-600">${act.cost}</span>
+                            <span className="text-xs font-medium text-emerald-600">${act.activity?.cost || 0}</span>
                           </div>
                         ))
                       )}
