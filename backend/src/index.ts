@@ -14,6 +14,8 @@ import stopRoutes from './routes/stop.routes';
 import stopActivityRoutes from './routes/stopActivity.routes';
 import cityRoutes from './routes/city.routes';
 import activityRoutes from './routes/activity.routes';
+import userRoutes from './routes/user.routes';
+import communityRoutes from './routes/community.routes';
 
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
@@ -25,6 +27,8 @@ app.use('/api/stops', stopRoutes);
 app.use('/api/stop-activities', stopActivityRoutes);
 app.use('/api/cities', cityRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/community', communityRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
