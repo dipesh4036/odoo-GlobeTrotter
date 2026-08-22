@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { useLoginMutation, loginSchema } from "@/hooks/api/useAuth";
+import { useLoginMutation, loginSchema } from "@/api/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
