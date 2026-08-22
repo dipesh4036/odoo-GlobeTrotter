@@ -205,3 +205,40 @@ export const deleteTrip = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const cancelTrip = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+
+    const existingTrip = await prisma.trip.findUnique({ where: { id } });
+    if (!existingTrip) {
+      res.status(404).json({ error: 'Trip not found' });
+      return;
+    }
+
+    if (existingTrip.userId !== req.user.userId) {
+      res.status(403).json({ error: 'Forbidden: You do not own this trip' });
+      return;
+    }
+
+    if (existingTrip.status === TripStatus.CANCELLED || existingTrip.status === TripStatus.COMPLETED) {
+      res.status(409).json({ error: `Cannot cancel a trip that is already ${existingTrip.status}` });
+      return;
+    }
+
+    const updatedTrip = await prisma.trip.update({
+      where: { id },
+      data: { status: TripStatus.CANCELLED }
+    });
+
+    res.status(200).json(updatedTrip);
+  } catch (error) {
+    console.error('Cancel trip error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
