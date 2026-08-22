@@ -142,7 +142,10 @@ export function useTripCalendarQuery(id: string) {
     queryKey: ["trips", id, "calendar"],
     queryFn: async (): Promise<CalendarEvent[]> => {
       const { data } = await apiClient.get(`/trips/${id}/calendar`);
-      return data;
+      return data.stops.map((stop: any) => ({
+        ...stop,
+        id: stop.stopId
+      }));
     },
     enabled: !!id,
   });
