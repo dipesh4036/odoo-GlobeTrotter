@@ -20,3 +20,29 @@ export function useAdminUsersQuery() {
     },
   });
 }
+
+export interface PopularItem {
+  id: string;
+  name: string;
+  popularityScore: number;
+}
+
+export function usePopularCitiesQuery() {
+  return useQuery({
+    queryKey: ["admin", "cities", "popular"],
+    queryFn: async (): Promise<PopularItem[]> => {
+      const { data } = await apiClient.get("/admin/cities/popular");
+      return data;
+    },
+  });
+}
+
+export function usePopularActivitiesQuery() {
+  return useQuery({
+    queryKey: ["admin", "activities", "popular"],
+    queryFn: async (): Promise<PopularItem[]> => {
+      const { data } = await apiClient.get("/admin/activities/popular");
+      return data;
+    },
+  });
+}

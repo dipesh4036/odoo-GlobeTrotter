@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Users, MapPin, Activity, TrendingUp } from "lucide-react";
-import { useAdminUsersQuery } from "@/api/useAdmin";
+import { useAdminUsersQuery, usePopularCitiesQuery, usePopularActivitiesQuery } from "@/api/useAdmin";
 import { format } from "date-fns";
 import {
   Table,
@@ -23,6 +23,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("users");
 
   const { data: usersList, isLoading: isUsersLoading } = useAdminUsersQuery();
+  const { data: popularCities, isLoading: isCitiesLoading } = usePopularCitiesQuery();
+  const { data: popularActivities, isLoading: isActivitiesLoading } = usePopularActivitiesQuery();
 
   useEffect(() => {
     if (!isLoading && user && user.role !== "ADMIN") {
@@ -37,6 +39,44 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  const renderPopularList = (items: any[] | undefined, isLoading: boolean, emptyMessage: string) => {
+    if (isLoading) {
+      return (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-zinc-200" />
+              <div className="flex-1 h-5 bg-zinc-200 rounded" />
+              <div className="w-16 h-5 bg-zinc-200 rounded" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (!items || items.length === 0) {
+      return (
+        <div className="p-12 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
+          <p className="text-zinc-500 font-medium">{emptyMessage}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {items.map((item, idx) => (
+          <div key={item.id} className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx < 3 ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-500'}`}>
+              #{idx + 1}
+            </div>
+            <div className="flex-1 font-semibold text-zinc-900">{item.name}</div>
+            <Badge variant="secondary" className="px-3 py-1 bg-indigo-50 text-indigo-700 border-indigo-100">
+              Score: {item.popularityScore}
+            </Badge>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-32">
@@ -132,16 +172,26 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="cities" className="mt-8">
-            {/* Popular Cities Tab Content */}
-            <div className="p-8 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
-              <p className="text-zinc-500 font-medium">Popular Cities (WIP)</p>
+            <div className="bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-xl text-zinc-900 flex items-center gap-2">
+                  <MapPin className="w-6 h-6 text-indigo-500" />
+                  Popular Cities
+                </h3>
+              </div>
+              {renderPopularList(popularCities, isCitiesLoading, "No popular cities data available.")}
             </div>
           </TabsContent>
 
           <TabsContent value="activities" className="mt-8">
-            {/* Popular Activities Tab Content */}
-            <div className="p-8 text-center border-2 border-dashed border-zinc-200 bg-white rounded-3xl">
-              <p className="text-zinc-500 font-medium">Popular Activities (WIP)</p>
+            <div className="bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-xl text-zinc-900 flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-indigo-500" />
+                  Popular Activities
+                </h3>
+              </div>
+              {renderPopularList(popularActivities, isActivitiesLoading, "No popular activities data available.")}
             </div>
           </TabsContent>
 
