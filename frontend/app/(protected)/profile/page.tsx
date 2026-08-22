@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { useUpdateUserMutation, useSavedDestinationsQuery, useRemoveSavedDestinationMutation, updateUserSchema, UpdateUserCredentials, SavedDestination } from "@/api/useAuth";
+import { useUpdateUserMutation, useSavedDestinationsQuery, useRemoveSavedDestinationMutation, useDeleteAccountMutation, updateUserSchema, UpdateUserCredentials, SavedDestination } from "@/api/useAuth";
 import { useTripsQuery } from "@/api/useTrips";
 import { TripCard } from "@/components/trips/TripCard";
 import { useEffect, useState } from "react";
@@ -13,9 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Camera, UserCircle, Trash2, MapPin } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Loader2, Camera, UserCircle, Trash2, MapPin, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const { user, isLoading: isUserLoading, refetch } = useAuth();
@@ -27,6 +29,10 @@ export default function ProfilePage() {
 
   const { data: savedDestinations, isLoading: isSavedDestinationsLoading } = useSavedDestinationsQuery();
   const { mutateAsync: removeSavedDestination, isPending: isRemovingDestination } = useRemoveSavedDestinationMutation();
+  const { mutateAsync: deleteAccount, isPending: isDeletingAccount } = useDeleteAccountMutation();
+  const router = useRouter();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleRemoveSavedDestination = async (cityId: string) => {
     try {
@@ -35,6 +41,20 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ["savedDestinations"] });
     } catch (error) {
       toast.error("Failed to remove destination.");
+    }
+  };
+
+  const handleDeleteAccountConfirm = async () => {
+    try {
+      await deleteAccount();
+      toast.success("Account deleted successfully.");
+      setIsDeleteDialogOpen(false);
+      // Wait a moment for toast
+      setTimeout(() => {
+        router.push("/login");
+      }, 1000);
+    } catch (error) {
+      toast.error("Failed to delete account. Please try again.");
     }
   };
 
@@ -284,7 +304,54 @@ export default function ProfilePage() {
           </section>
         </div>
 
+        {/* Delete Account Section */}
+        <div className="mt-16 pt-8 border-t border-zinc-200">
+          <div className="flex flex-col items-center text-center">
+            <AlertTriangle className="w-8 h-8 text-rose-500 mb-4" />
+            <h3 className="text-xl font-bold text-zinc-900 mb-2">Danger Zone</h3>
+            <p className="text-zinc-500 mb-6 max-w-md mx-auto">
+              Once you delete your account, there is no going back. Please be certain. All your trips, saved destinations, and personal data will be permanently erased.
+            </p>
+            <Button 
+              variant="destructive" 
+              className="rounded-xl px-8"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              Delete Account
+            </Button>
+          </div>
+        </div>
+
       </main>
+
+      {/* Delete Account Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-rose-600 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Account
+            </DialogTitle>
+            <DialogDescription>
+              Are you absolutely sure you want to permanently delete your account? This action cannot be undone and all data will be lost immediately.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+            <Button variant="outline" className="rounded-xl" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              className="rounded-xl bg-rose-600 hover:bg-rose-700" 
+              onClick={handleDeleteAccountConfirm}
+              disabled={isDeletingAccount}
+            >
+              {isDeletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Yes, delete my account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

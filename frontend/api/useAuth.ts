@@ -122,3 +122,12 @@ export function useRemoveSavedDestinationMutation() {
     },
   });
 }
+
+export function useDeleteAccountMutation() {
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.delete("/users/me");
+      return data;
+    },
+  });
+}
